@@ -20,8 +20,8 @@ def analyze_sentiment(text):
     Returns:
         dict: A dictionary with the raw output of the model.
     """
-    result = sentiment_pipeline(text)[0]    
-    return result 
+    return sentiment_pipeline(text)[0]    
+    
 
 
 def categorize_text(sentiment_result, positive_threshold=0.5, negative_threshold=0.5):
@@ -41,7 +41,7 @@ def categorize_text(sentiment_result, positive_threshold=0.5, negative_threshold
     
     if label == 'LABEL_2' and score >= positive_threshold:
         return "positive"
-    elif label == 'LABEL_0' and score >= negative_threshold:
+    elif label == 'LABEL_0' and score <= negative_threshold:
         return "negative"
     else:
         return "neutral"

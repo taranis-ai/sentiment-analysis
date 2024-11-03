@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from sentiment_analysis_xlmrobertabase import analyze_sentiment
+from sentiment_analysis.sentiment_analysis_xlmrobertabase import analyze_sentiment
 
 app = Flask(__name__)
 
