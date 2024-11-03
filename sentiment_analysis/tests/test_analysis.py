@@ -1,8 +1,7 @@
 import pytest
 import json
-from sentiment_analysis_multimodel import analyze_sentiment, categorize_text
+from sentiment_analysis.sentiment_analysis_multimodel import analyze_sentiment, categorize_text
 
-# Load test data from clustered_news_item_list.json
 @pytest.fixture
 def test_data():
     with open("tests/clustered_news_item_list.json") as f:
