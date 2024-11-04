@@ -4,7 +4,7 @@ from sentiment_analysis.sentiment_analysis_multimodel import analyze_sentiment, 
 
 @pytest.fixture
 def test_data():
-    with open("tests/clustered_news_item_list.json") as f:
+    with open("sentiment_analysis/tests/clustered_news_item_list.json") as f:
         data = json.load(f)
     return [item["content"] for cluster in data for item in cluster["news_items"] if "content" in item]
 
