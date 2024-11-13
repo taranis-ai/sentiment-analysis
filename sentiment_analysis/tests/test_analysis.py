@@ -1,6 +1,6 @@
 import pytest
 import json
-from sentiment_analysis.sentiment_analysis_multimodel import analyze_sentiment, categorize_text
+from sentiment_analysis.sentiment_analysis_multimodel import analyze_sentiment
 
 @pytest.fixture
 def test_data():
@@ -27,12 +27,3 @@ def test_analyze_sentiment_with_test_data(test_data):
         result = analyze_sentiment(content)
         assert "label" in result, f"Expected 'label' in result for content: {content[:30]}"
         assert "score" in result, f"Expected 'score' in result for content: {content[:30]}"
-
-@pytest.mark.parametrize("sentiment_result, expected_category", [
-    ({"label": "POSITIVE", "score": 0.8}, "positive"),
-    ({"label": "NEGATIVE", "score": 0.3}, "negative"),
-    ({"label": "POSITIVE", "score": 0.4}, "neutral"),  # Below positive threshold
-    ({"label": "NEGATIVE", "score": 0.6}, "neutral")  # Above negative threshold
-])
-def test_categorize_text(sentiment_result, expected_category):
-    assert categorize_text(sentiment_result) == expected_category

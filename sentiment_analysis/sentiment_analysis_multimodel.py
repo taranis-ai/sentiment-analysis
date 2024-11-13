@@ -6,9 +6,9 @@ longformer_tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-b
 longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
 
 label_mapping = {
-    "LABEL_0": "NEGATIVE",
-    "LABEL_1": "NEUTRAL",
-    "LABEL_2": "POSITIVE"
+    "LABEL_0": "Negative",
+    "LABEL_1": "Neutral",
+    "LABEL_2": "Positive"
 }
 
 def analyze_sentiment(text):
@@ -34,32 +34,16 @@ def analyze_sentiment(text):
             logits = outputs.logits
             predicted_class_id = logits.argmax().item()
             
-            # Map class ID to sentiment label
+            # Map class ID to sentiment label with better readability
             sentiment = label_mapping[f"LABEL_{predicted_class_id}"]
+
             return {"label": sentiment, "score": logits.softmax(dim=1).max().item()}
         else:
-            return roberta_sentiment_pipeline(text)[0]
+            roberta_output = roberta_sentiment_pipeline(text)[0]
+            
+            return {
+                "label": roberta_output["label"],
+                "score": roberta_output["score"]
+             }
     except Exception as e:
         return {"error": str(e)}
-
-def categorize_text(sentiment_result, positive_threshold=0.5, negative_threshold=0.5):
-    """
-    Categorize the sentiment as positive, negative, or neutral based on thresholds.
-
-    Args:
-        sentiment_result (dict): The result from the sentiment analysis containing label and score.
-        positive_threshold (float): The threshold above which the sentiment is considered positive.
-        negative_threshold (float): The threshold below which the sentiment is considered negative.
-
-    Returns:
-        str: The category of the sentiment ('positive', 'negative', 'neutral').
-    """
-    label = sentiment_result['label']
-    score = sentiment_result['score']
-    
-    if label == 'POSITIVE' and score >= positive_threshold:
-        return "positive"
-    elif label == 'NEGATIVE' and score <= negative_threshold:
-        return "negative"
-    else:
-        return "neutral"
