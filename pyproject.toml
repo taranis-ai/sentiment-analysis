@@ -13,7 +13,16 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "networkx",
+    "requests",
+    "Flask",
+    "pydantic-settings",
+    "python-dotenv",
+    "granian",
+    "transformers",
+    "torch",
+    "tiktoken",
+    "protobuf",
+    "sentencepiece"
 ]
 dynamic = ["version"]
 
@@ -25,13 +34,14 @@ dev = ["pytest", "ruff"]
 
 [build-system]
 requires = [
-    "setuptools>=45",
+    "setuptools>=61",
     "setuptools_scm[toml]>=6.2",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
+fallback_version = "0.0.0"
 
 [tool.setuptools]
 packages = ["sentiment_analysis"]

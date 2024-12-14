@@ -1,49 +1,52 @@
-from transformers import pipeline, LongformerForSequenceClassification, LongformerTokenizer
+from transformers import AutoTokenizer, LongformerForSequenceClassification, LongformerTokenizer, AutoModelForSequenceClassification
+from sentiment_analysis.log import logger
 
 
-roberta_sentiment_pipeline = pipeline("sentiment-analysis", model="cardiffnlp/twitter-xlm-roberta-base-sentiment")
-longformer_tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
-longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
+class SentimentAnalysis:
+    def __init__(self, model="cardiffnlp/twitter-xlm-roberta-base-sentiment") -> None:
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
+        self.roberta_sentiment_pipeline = AutoModelForSequenceClassification.from_pretrained(model)
+        self.longformer_tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
+        self.longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
 
-label_mapping = {
-    "LABEL_0": "Negative",
-    "LABEL_1": "Neutral",
-    "LABEL_2": "Positive"
-}
+        self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
-def analyze_sentiment(text):
-    """
-    Analyze the sentiment of the given text. Select model based on text length.
+    def analyze_sentiment(self, text: str) -> dict:
+        """
+        Analyze the sentiment of the given text. Select model based on text length.
+        """
+        if not text.strip():
+            logger.info("Empty or unparseable text provided")
+            raise ValueError("Empty or unparseable text provided")
 
-    Args:
-        text (str): The text to analyze.
+        try:
+            logger.debug(f"Analyzing sentiment for text: {text[:20]} - Length: {len(text)}")
+            if len(text) > 512:
+                return self._get_longform_sentiment_prediction(text)
+            return self._get_sentiment_prediction(text)
+        except Exception as e:
+            logger.exception()
+            raise ValueError("Error while analyzing sentiment") from e
 
-    Returns:
-        dict: A dictionary with the raw output of the model.
-    """
-    if not text or len(text.strip()) == 0:
-        return {"error": "Empty text provided"}
+    def _get_sentiment_prediction(self, text: str):
+        tokens = self.tokenizer(text, return_tensors="pt", padding=True)
+        input_ids = tokens["input_ids"]
+        attention_mask = tokens["attention_mask"]
 
-    try:
-        # Tokenize the text with RoBERTa tokenizer
-        roberta_tokens = roberta_sentiment_pipeline.tokenizer(text)
-        
-        if len(roberta_tokens["input_ids"]) > 512:
-            inputs = longformer_tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-            outputs = longformer_model(**inputs)
-            logits = outputs.logits
-            predicted_class_id = logits.argmax().item()
-            
-            # Map class ID to sentiment label with better readability
-            sentiment = label_mapping[f"LABEL_{predicted_class_id}"]
+        outputs = self.roberta_sentiment_pipeline(input_ids=input_ids, attention_mask=attention_mask)
+        logits = outputs.logits[0]  # Assuming batch size of 1
+        predicted_class_id = logits.argmax().item()
 
-            return {"label": sentiment, "score": logits.softmax(dim=1).max().item()}
-        else:
-            roberta_output = roberta_sentiment_pipeline(text)[0]
-            
-            return {
-                "label": roberta_output["label"],
-                "score": roberta_output["score"]
-             }
-    except Exception as e:
-        return {"error": str(e)}
+        sentiment = self.label_mapping.get(f"LABEL_{predicted_class_id}", "Unknown")
+        score = logits.softmax(dim=0)[predicted_class_id].item()
+
+        return {"label": sentiment, "score": score}
+
+    def _get_longform_sentiment_prediction(self, text: str) -> dict:
+        inputs = self.longformer_tokenizer(text, return_tensors="pt", padding=True)
+        outputs = self.longformer_model(**inputs)
+        logits = outputs.logits
+        predicted_class_id = logits.argmax().item()
+
+        sentiment = self.label_mapping.get(f"LABEL_{predicted_class_id}", "Unknown")
+        return {"label": sentiment, "score": logits.softmax(dim=1).max().item()}
