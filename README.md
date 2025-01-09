@@ -12,7 +12,7 @@ This project integrates sentiment analysis into [Taranis AI](https://github.com/
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 
 ### Installation
 
@@ -28,11 +28,12 @@ uv sync
 To start the Flask API:
 
 ```bash
-python -m sentiment_analysis.api.api_multimodel
-# or
 flask run
 # or
 granian run
+
+# or
+docker run -p 5000:5000 ghcr.io/taranis-ai/taranis-sentiment-bot:latest
 ```
 
 ### Example API Call
