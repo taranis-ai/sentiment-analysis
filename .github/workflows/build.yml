@@ -64,5 +64,5 @@ jobs:
             ghcr.io/${{ env.GHCR_OWNER }}/taranis-sentiment-bot:${{ github.ref_name }}
           build-args: |
             BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
-          cache-from: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-sentiment-bot:latest
-          cache-to: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-sentiment-bot:latest,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-sentiment-bot-cache:latest
+          cache-to: type=registry,ref=ghcr.io/${{ env.GHCR_OWNER }}/taranis-sentiment-bot-cache:latest,mode=max

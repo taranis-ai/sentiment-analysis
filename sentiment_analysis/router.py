@@ -21,9 +21,15 @@ class AnalyzeText(MethodView):
             return jsonify({"error": str(e)}), 500
 
 
+class HealthCheck(MethodView):
+    def get(self):
+        return jsonify({"status": "ok"})
+
+
 def init(app: Flask, analyzer: SentimentAnalysis):
     app.url_map.strict_slashes = False
 
     analyze_bp = Blueprint("predict", __name__)
     analyze_bp.add_url_rule("/", view_func=AnalyzeText.as_view("analyze", analyzer=analyzer))
+    analyze_bp.add_url_rule("/health", view_func=HealthCheck.as_view("health"))
     app.register_blueprint(analyze_bp)
