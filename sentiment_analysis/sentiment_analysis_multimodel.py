@@ -7,7 +7,7 @@ class SentimentAnalysis:
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.roberta_sentiment_pipeline = AutoModelForSequenceClassification.from_pretrained(model)
         self.longformer_tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
-        self.longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096")
+        self.longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096", num_labels=3)
 
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
@@ -21,7 +21,7 @@ class SentimentAnalysis:
 
         try:
             logger.debug(f"Analyzing sentiment for text: {text[:20]} - Length: {len(text)}")
-            if len(text) > 512:
+            if len(text) > 15:
                 return self._get_longform_sentiment_prediction(text)
             return self._get_sentiment_prediction(text)
         except Exception as e:
