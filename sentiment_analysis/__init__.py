@@ -1,6 +1,5 @@
 from flask import Flask
 from sentiment_analysis import router
-from sentiment_analysis.sentiment_analysis_multimodel import SentimentAnalysis
 
 
 def create_app():
@@ -14,8 +13,7 @@ def create_app():
 
 
 def init(app: Flask):
-    analyzer = SentimentAnalysis()
-    router.init(app, analyzer)
+    router.init(app)
 
 
 if __name__ == "__main__":

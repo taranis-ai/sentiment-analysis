@@ -1,7 +1,7 @@
 import os
 import pytest
 import json
-from sentiment_analysis.sentiment_analysis_multimodel import SentimentAnalysis
+from sentiment_analysis.roberta_sentiment import RobertaSentiment
 
 
 @pytest.fixture(scope="session")
@@ -15,7 +15,7 @@ def news_items():
 
 @pytest.fixture(scope="session")
 def analyzer():
-    yield SentimentAnalysis()
+    yield RobertaSentiment()
 
 
 @pytest.fixture(scope="session")
