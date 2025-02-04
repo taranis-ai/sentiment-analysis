@@ -3,6 +3,7 @@ from flask.views import MethodView
 
 from sentiment_analysis.predictor import Predictor
 from sentiment_analysis.predictor_factory import PredictorFactory
+from sentiment_analysis.decorators import api_key_required
 
 
 class AnalyzeText(MethodView):
@@ -10,6 +11,7 @@ class AnalyzeText(MethodView):
         super().__init__()
         self.processor = processor
 
+    @api_key_required
     def post(self):
         try:
             data = request.get_json()
