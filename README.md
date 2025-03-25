@@ -30,7 +30,7 @@ To start the Flask API:
 ```bash
 flask run
 # or
-granian run
+granian app
 
 # or
 docker run -p 5000:5000 ghcr.io/taranis-ai/taranis-sentiment-bot:latest
