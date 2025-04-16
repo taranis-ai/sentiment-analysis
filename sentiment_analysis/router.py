@@ -3,7 +3,8 @@ from flask.views import MethodView
 
 from sentiment_analysis.predictor import Predictor
 from sentiment_analysis.predictor_factory import PredictorFactory
-from sentiment_analysis.decorators import api_key_required
+from sentiment_analysis.decorators import api_key_required, debug_request
+from sentiment_analysis.config import Config
 
 
 class AnalyzeText(MethodView):
@@ -11,6 +12,7 @@ class AnalyzeText(MethodView):
         super().__init__()
         self.processor = processor
 
+    @debug_request(Config.DEBUG)
     @api_key_required
     def post(self):
         try:
@@ -25,6 +27,7 @@ class AnalyzeText(MethodView):
 
 
 class HealthCheck(MethodView):
+    @debug_request(Config.DEBUG)
     def get(self):
         return jsonify({"status": "ok"})
 
@@ -34,6 +37,7 @@ class ModelInfo(MethodView):
         super().__init__()
         self.processor = processor
 
+    @debug_request(Config.DEBUG)
     def get(self):
         return jsonify(self.processor.modelinfo)
 
