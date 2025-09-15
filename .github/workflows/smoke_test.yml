@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
   pull_request_review:
     types: [submitted]
+  push:
 
 jobs:
   test_docker_deployment:
