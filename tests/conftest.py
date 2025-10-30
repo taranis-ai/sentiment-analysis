@@ -1,4 +1,3 @@
-import os
 import pytest
 from sentiment_analysis.roberta import Roberta
 from sentiment_analysis.longformer import Longformer
@@ -38,10 +37,15 @@ def neutral_text():
 
 @pytest.fixture(scope="session")
 def long_text():
-       return (
-                "The weather today was absolutely stunning."
-                "I woke up to a sky painted in vibrant hues of orange and pink as the sun rose, and the air was crisp and refreshing."
-                "My morning jog through the park was invigorating, with birds singing cheerfully and a gentle breeze rustling the autumn leaves." 
-                "Later, I treated myself to a cup of freshly brewed coffee and a warm croissant at a cozy café. The barista was friendly, and the atmosphere was relaxing."
-                "It's been a perfect day so far, filled with simple joys that remind me how beautiful life can be when we pause to appreciate it."
-        )
+    base_paragraph = (
+        "This paragraph is intentionally repetitive and neutral. "
+        "It describes routine observations about data processing, analysis pipelines, "
+        "daily workflows, and procedural operations. "
+        "There are no emotional cues, and the tone remains consistent and factual. "
+        "The goal is to provide a large text block for model evaluation, ensuring that "
+        "the sequence length exceeds typical short-text limits. "
+        "Each repetition increases the total word count and helps simulate "
+        "a long document scenario for robust testing. "
+    )
+
+    return " ".join([base_paragraph] * 20)
