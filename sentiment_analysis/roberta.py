@@ -1,8 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from sentiment_analysis.predictor import Predictor
 
 
-class RobertaSentiment(Predictor):
+class Roberta:
     def __init__(self, model="cardiffnlp/twitter-xlm-roberta-base-sentiment") -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.roberta_sentiment_pipeline = AutoModelForSequenceClassification.from_pretrained(model)

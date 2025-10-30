@@ -1,9 +1,8 @@
 from transformers import LongformerForSequenceClassification, LongformerTokenizer
-from sentiment_analysis.predictor import Predictor
 
 
-class LongformerSentiment(Predictor):
-    def __init__(self, model="cardiffnlp/twitter-xlm-roberta-base-sentiment") -> None:
+class Longformer:
+    def __init__(self) -> None:
         self.longformer_tokenizer = LongformerTokenizer.from_pretrained("allenai/longformer-base-4096")
         self.longformer_model = LongformerForSequenceClassification.from_pretrained("allenai/longformer-base-4096", num_labels=3)
 
