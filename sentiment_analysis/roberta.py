@@ -1,3 +1,5 @@
+import torch
+from collections import Counter
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
@@ -9,15 +11,23 @@ class Roberta:
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
     def predict(self, text: str) -> dict:
-        tokens = self.tokenizer(text, return_tensors="pt", padding=True)
-        input_ids = tokens["input_ids"]
-        attention_mask = tokens["attention_mask"]
+        model_inputs = self.tokenize_and_reshape(text)
+        logits = self.roberta_sentiment_pipeline(**model_inputs).logits
 
-        outputs = self.roberta_sentiment_pipeline(input_ids=input_ids, attention_mask=attention_mask)
-        logits = outputs.logits[0]  # Assuming batch size of 1
-        predicted_class_id = logits.argmax().item()
-
+        predicted_class_id = Counter(logits.argmax(axis=1).tolist()).most_common()[0][0]
         sentiment = self.label_mapping.get(f"LABEL_{predicted_class_id}", "Unknown")
-        score = logits.softmax(dim=0)[predicted_class_id].item()
+        
+        # average the score of the predicted label for each chunk
+        score = logits.softmax(axis=1).gather(dim=1, index=logits.argmax(axis=1, keepdims=True)).mean().item()
 
         return {"label": sentiment, "score": score}
+    
+    def tokenize_and_reshape(self, text: str, chunk_size: int = 500) -> dict[str, torch.Tensor]:
+        tokens = self.tokenizer.encode(text, add_special_tokens=False)
+        if remainder := len(tokens) % chunk_size:
+            tokens += [1] * (chunk_size - remainder)
+
+        input_ids = torch.tensor(tokens).view(-1, chunk_size)
+        attention_mask = (input_ids != 1).long()
+
+        return {"input_ids": input_ids, "attention_mask": attention_mask}
