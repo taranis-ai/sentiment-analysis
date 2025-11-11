@@ -1,6 +1,6 @@
 # Taranis AI sentiment_analysis Bot
 
-This project integrates sentiment analysis into [Taranis AI](https://github.com/taranis-ai/taranis-ai), allowing for the classification of news items as **positive**, **negative**, or **neutral** using transformer models. The API intelligently chooses the appropriate model based on the text length, utilizing **XLM-RoBERTa** for shorter texts and **Longformer** for longer texts.
+This project integrates sentiment analysis into [Taranis AI](https://github.com/taranis-ai/taranis-ai), allowing for the classification of news items as **positive**, **negative**, or **neutral** using transformer models. The used model is cardiffnlp/twitter-xlm-roberta-base-sentiment
 
 ## Pre-requisites
 

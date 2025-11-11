@@ -7,10 +7,8 @@ def assert_schema(result):
     assert isinstance(result["score"], float), "Expected 'score' to be a float"
     assert 0.0 <= result["score"] <= 1.0, "Score should be between 0 and 1"
 
-@pytest.mark.parametrize("model_fixture", ["roberta", "longformer"])
-def test_sentiment_output_schema(request, model_fixture, positive_text):
-    model = request.getfixturevalue(model_fixture)
-    result = model.predict(positive_text)
+def test_sentiment_output_schema(roberta, positive_text):
+    result = roberta.predict(positive_text)
     assert_schema(result)
 
 
@@ -30,19 +28,7 @@ def test_correct_sentiment_roberta(roberta, request, text_fixture, expected_labe
         f"Expected '{expected_label}', got '{result['label']}'"
     )
 
-
-def test_long_text_roberta_fails(long_text, roberta):
-    """
-    Roberta should raise an exception on very long text inputs (>1000 words).
-    """
-    with pytest.raises(Exception):
-        roberta.predict(long_text)
-
-
-def test_long_text_longformer_succeeds(long_text, longformer):
-    """
-    Longformer should handle long texts successfully.
-    """
-    result = longformer.predict(long_text)
+def test_correct_sentiment_roberta_long_text(long_text, roberta):
+    result = roberta.predict(long_text)
     assert_schema(result)
-    assert result["label"].lower() in {"positive", "negative", "neutral"}
+    assert result["label"].lower() == "neutral"

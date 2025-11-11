@@ -1,16 +1,9 @@
 import pytest
 from sentiment_analysis.roberta import Roberta
-from sentiment_analysis.longformer import Longformer
-
 
 @pytest.fixture(scope="session")
 def roberta():
     yield Roberta()
-
-@pytest.fixture(scope="session")
-def longformer():
-    yield Longformer()
-
 
 @pytest.fixture(scope="session")
 def positive_text():
