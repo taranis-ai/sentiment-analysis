@@ -1,61 +1,65 @@
-# Taranis AI Sentiment Analysis
+# Taranis AI sentiment_analysis Bot
 
 This project integrates sentiment analysis into [Taranis AI](https://github.com/taranis-ai/taranis-ai), allowing for the classification of news items as **positive**, **negative**, or **neutral** using transformer models. The API intelligently chooses the appropriate model based on the text length, utilizing **XLM-RoBERTa** for shorter texts and **Longformer** for longer texts.
 
-## Features
+## Pre-requisites
 
-- **Multi-language Support** with XLM-RoBERTa and Longformer.
-- **Pre-trained Models** for high-accuracy sentiment classification.
-- **Flask API** for external calls to the sentiment analysis.
+- uv - https://docs.astral.sh/uv/getting-started/installation/
+- docker (for building container) - https://docs.docker.com/engine/
 
-## Setup
-
-### Prerequisites
-
-- Python 3.10+
-
-### Installation
-
-To install dependencies:
+Create a python venv and install the necessary packages for the bot to run.
 
 ```bash
 uv venv
-uv sync
+source .venv/bin/activate
+uv sync --all-extras --dev
 ```
 
-### Running the API
+## Usage
 
-To start the Flask API:
+You can run your bot locally with
 
 ```bash
-flask run
+flask run --port 5500
 # or
-granian app
-
-# or
-docker run -p 5000:5000 ghcr.io/taranis-ai/taranis-sentiment-bot:latest
+granian app --port 5500
 ```
 
-### Example API Call
 
-To test the API with a POST request, use curl:
+## Docker
+
+You can also create a Docker image out of this bot. For this, you first need to build the image with the build_container.sh
+
+You can specify which model the image should be built with the MODEL environment variable. If you omit it, the image will be built with the default model.
 
 ```bash
-curl -X POST http://127.0.0.1:5000/ \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This is an example sentence to analyze sentiment."}'
+MODEL=<model_name> ./build_container.sh
 ```
 
-### Example Response
+then you can run it with:
 
-```json
-{
-  "sentiment": {
-    "label": "POSITIVE",
-    "score": 0.94
-  }
-}
+```bash
+docker run -p 5500:8000 <image-name>:<tag>
 ```
+
+If you encounter errors, make sure that port 5500 is not in use by another application.
+
+
+## Test the bot
+
+Once the bot is running, you can send test data to it on which it runs its inference method:
+
+```bash
+curl -X POST http://127.0.0.1:5500 -H "Content-Type: application/json" -d '{"key": "some data"}'
+```
+
+## Development
+
+If you want to contribute to the development of this bot, make sure you set up your pre-commit hooks correctly:
+
+- Install pre-commit (https://pre-commit.com/)
+- Setup hooks: `> pre-commit install`
+
 
 ## License
 
