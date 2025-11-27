@@ -1,0 +1,189 @@
+openapi: 3.1.0
+
+info:
+  title: Sentiment Analysis API
+  description: |
+    An API for sentiment analysis of input texts.  
+    Based on the taranis-ai / sentiment-analysis repository.  
+    Returns sentiment classification (e.g. positive / negative / neutral) and optionally confidence scores.
+  version: 1.0.0
+  license:
+    name: EUPL-1.2
+    url: https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  contact:
+    name: AIT / Taranis-AI
+    email: lukas.linauer@ait.ac.at
+
+servers:
+  - url: http://localhost:5500
+    description: Local development server
+  - url: http://localhost:8000
+    description: Docker container server
+
+paths:
+  /sentiment:
+    post:
+      summary: Analyze sentiment of one or more texts
+      description: |
+        Accepts a JSON payload containing a text or list of texts.
+        Returns sentiment labels and (optionally) confidence scores for each input.
+      operationId: analyzeSentiment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SentimentRequest'
+            examples:
+              single_text:
+                summary: Single text sentiment analysis
+                value:
+                  text: "I love using this product, it works great!"
+              batch:
+                summary: Batch sentiment analysis
+                value:
+                  texts:
+                    - "I love using this product, it works great!"
+                    - "This is awful, I hate it."
+      responses:
+        '200':
+          description: Sentiment analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentimentResponse'
+              examples:
+                example1:
+                  summary: Single result
+                  value:
+                    sentiments:
+                      - text: "I love using this product, it works great!"
+                        label: "positive"
+                        scores:
+                          positive: 0.95
+                          neutral: 0.04
+                          negative: 0.01
+                example2:
+                  summary: Multiple results
+                  value:
+                    sentiments:
+                      - text: "Good quality"
+                        label: "positive"
+                        scores:
+                          positive: 0.88
+                          neutral: 0.10
+                          negative: 0.02
+                      - text: "Poor service"
+                        label: "negative"
+                        scores:
+                          positive: 0.05
+                          neutral: 0.10
+                          negative: 0.85
+        '400':
+          description: Bad request — invalid JSON or missing required field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Missing required field 'text' or 'texts'"
+        '422':
+          description: Unprocessable entity — payload validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Empty text in request"
+        '500':
+          description: Internal server error — e.g. model failure
+          content:
+            application/json:
+              schema:
+                $ref: '##/components/schemas/Error'
+              example:
+                error: "Sentiment model inference failed"
+
+  /health:
+    get:
+      summary: Health check status
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    SentimentRequest:
+      type: object
+      description: Request payload for sentiment analysis
+      oneOf:
+        - required: [text]
+          properties:
+            text:
+              type: string
+              minLength: 1
+              description: Single input text to analyze
+        - required: [texts]
+          properties:
+            texts:
+              type: array
+              items:
+                type: string
+                minLength: 1
+              description: Array of texts for batch sentiment analysis
+
+    SentimentResponse:
+      type: object
+      description: Sentiment analysis results
+      properties:
+        sentiments:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+                description: The original input text
+              label:
+                type: string
+                description: Sentiment label (e.g. positive / neutral / negative / mixed)
+              scores:
+                type: object
+                description: Confidence scores for each sentiment class
+                additionalProperties:
+                  type: number
+                  format: float
+      required:
+        - sentiments
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+          nullable: true
+
+tags:
+  - name: Sentiment Analysis
+    description: Endpoint for computing sentiment of texts
+  - name: System
+    description: Health and status endpoints
