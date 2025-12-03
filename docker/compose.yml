@@ -1,0 +1,10 @@
+services:
+  sentiment_analysis:
+    image: ghcr.io/taranis-ai/taranis-sentiment-analysis:latest
+    environment:
+      DEBUG: "${DEBUG:-False}"
+      MODEL: "${MODEL:-roberta}"          
+      API_KEY: "${API_KEY:-testkey}"            
+    ports:
+      - "5500:8000"  
+    restart: unless-stopped
