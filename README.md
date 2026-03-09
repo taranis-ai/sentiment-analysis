@@ -1,6 +1,11 @@
 # Taranis AI sentiment_analysis Bot
 
-This project integrates sentiment analysis into [Taranis AI](https://github.com/taranis-ai/taranis-ai), allowing for the classification of news items as **positive**, **negative**, or **neutral** using transformer models. The API intelligently chooses the appropriate model based on the text length, utilizing **XLM-RoBERTa** for shorter texts and **Longformer** for longer texts.
+This project integrates sentiment analysis into [Taranis AI](https://github.com/taranis-ai/taranis-ai), allowing for the classification of news items as **positive**, **negative**, or **neutral** using transformer models. 
+
+Available models:
+- roberta (https://huggingface.co/cardiffnlp/twitter-xlm-roberta-base-sentiment) - *Default*
+- longformer (https://huggingface.co/allenai/longformer-base-4096)
+
 
 ## Pre-requisites
 
@@ -20,9 +25,17 @@ uv sync --all-extras --dev
 You can run your bot locally with
 
 ```bash
-flask run --port 5500
+quart run --port 5500
 # or
-granian app --port 5500
+granian --interface asgi app --port 5500
+```
+
+You can set configs either via a `.env` file or by setting environment variables directly.
+available configs are in the `config.py`
+You can select the model via the `MODEL` env var. E.g.:
+
+```bash
+MODEL=roberta flask run
 ```
 
 
@@ -50,7 +63,25 @@ If you encounter errors, make sure that port 5500 is not in use by another appli
 Once the bot is running, you can send test data to it on which it runs its inference method:
 
 ```bash
-curl -X POST http://127.0.0.1:5500 -H "Content-Type: application/json" -d '{"key": "some data"}'
+> curl -X POST http://127.0.0.1:5500 -H "Content-Type: application/json"  -d '{"text": "This product is really really nice"}'
+> {"label":"Positive","score":0.9088153839111328}
+```
+
+```bash
+> curl -X POST http://127.0.0.1:5500 -H "Content-Type: application/json"  -d '{"text": "This product is not the best, but you can use it"}'
+> {"label":"Neutral","score":0.361157089471817}
+```
+
+You can also set up authorization via the `API_KEY` env var. In this case, you need to send the API_KEY as an Authorization header:
+
+```bash
+> curl -X POST http://127.0.0.1:5500/  -H "Authorization: Bearer api_key" -H "Content-Type: application/json"   -d '{"text": "This is an example for NER, about the ACME Corporation which is producing Dy#namite in Acme City, which is in Australia and run by Mr. Wile E. Coyote."}'
+> {"ACME Corporation":"Organization","Acme City":"Location","Australia":"Location","Dynamite":"Product","NER":"Organization","Wile E. Coyote":"Person"}
+```
+
+```bash
+> curl -X POST http://127.0.0.1:5000 -H "Content-Type: application/json" -H "Authorization: Bearer api_key"  -d '{"text": "This product is really dumb. You should not buy it"}'
+> {"label":"Negative","score":0.9581084251403809}
 ```
 
 ## Development
