@@ -1,3 +1,5 @@
+import asyncio
+
 from transformers import LongformerForSequenceClassification, LongformerTokenizer
 
 
@@ -8,9 +10,9 @@ class Longformer:
 
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
-    def predict(self, text: str) -> dict:
+    async def predict(self, text: str) -> dict:
         inputs = self.longformer_tokenizer(text, return_tensors="pt", padding=True)
-        outputs = self.longformer_model(**inputs)
+        outputs = await asyncio.to_thread(self.longformer_model, **inputs)
         logits = outputs.logits
         predicted_class_id = logits.argmax().item()
 

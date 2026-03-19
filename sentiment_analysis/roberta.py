@@ -1,4 +1,6 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import asyncio
+
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 class Roberta:
@@ -8,12 +10,16 @@ class Roberta:
 
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
-    def predict(self, text: str) -> dict:
+    async def predict(self, text: str) -> dict:
         tokens = self.tokenizer(text, return_tensors="pt", padding=True)
         input_ids = tokens["input_ids"]
         attention_mask = tokens["attention_mask"]
 
-        outputs = self.roberta_sentiment_pipeline(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = await asyncio.to_thread(
+            self.roberta_sentiment_pipeline,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+        )
         logits = outputs.logits[0]  # Assuming batch size of 1
         predicted_class_id = logits.argmax().item()
 
