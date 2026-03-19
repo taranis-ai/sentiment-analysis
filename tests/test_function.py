@@ -31,13 +31,10 @@ def test_correct_sentiment_roberta(roberta, request, text_fixture, expected_labe
     )
 
 
-def test_long_text_roberta_fails(long_text, roberta):
-    """
-    Roberta should raise an exception on very long text inputs (>1000 words).
-    """
-    with pytest.raises(Exception):
-        roberta.predict(long_text)
-
+def test_long_text_roberta_succeeds(long_text, roberta):
+    result = roberta.predict(long_text)
+    assert_schema(result)
+    assert result["label"].lower() in {"positive", "negative", "neutral"}
 
 def test_long_text_longformer_succeeds(long_text, longformer):
     """

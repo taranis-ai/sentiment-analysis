@@ -1,7 +1,11 @@
+from collections import Counter
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
 class Roberta:
+    CHUNK_SIZE = 500
+
     def __init__(self, model="cardiffnlp/twitter-xlm-roberta-base-sentiment") -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.roberta_sentiment_pipeline = AutoModelForSequenceClassification.from_pretrained(model)
@@ -9,15 +13,45 @@ class Roberta:
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
     def predict(self, text: str) -> dict:
-        tokens = self.tokenizer(text, return_tensors="pt", padding=True)
-        input_ids = tokens["input_ids"]
-        attention_mask = tokens["attention_mask"]
+        model_inputs = self._build_model_inputs(text)
+        outputs = self.roberta_sentiment_pipeline(**model_inputs)
+        logits = outputs.logits
 
-        outputs = self.roberta_sentiment_pipeline(input_ids=input_ids, attention_mask=attention_mask)
-        logits = outputs.logits[0]  # Assuming batch size of 1
-        predicted_class_id = logits.argmax().item()
+        predicted_class_ids = logits.argmax(dim=1).tolist()
+        winning_class_id = Counter(predicted_class_ids).most_common(1)[0][0]
 
-        sentiment = self.label_mapping.get(f"LABEL_{predicted_class_id}", "Unknown")
-        score = logits.softmax(dim=0)[predicted_class_id].item()
+        probabilities = logits.softmax(dim=1)
+        winning_scores = [
+            probabilities[idx][winning_class_id].item()
+            for idx, predicted_class_id in enumerate(predicted_class_ids)
+            if predicted_class_id == winning_class_id
+        ]
+
+        sentiment = self.label_mapping.get(f"LABEL_{winning_class_id}", "Unknown")
+        score = sum(winning_scores) / len(winning_scores)
 
         return {"label": sentiment, "score": score}
+
+    def _build_model_inputs(self, text: str) -> dict:
+        token_ids = self.tokenizer.encode(text, add_special_tokens=False)
+
+        if len(token_ids) <= self.CHUNK_SIZE:
+            return self.tokenizer(text, return_tensors="pt", padding=True)
+
+        chunked_token_ids = [
+            token_ids[idx:idx + self.CHUNK_SIZE]
+            for idx in range(0, len(token_ids), self.CHUNK_SIZE)
+        ]
+
+        encoded_chunks = [
+            self.tokenizer.prepare_for_model(
+                chunk,
+                add_special_tokens=True,
+                return_attention_mask=True,
+                return_tensors=None,
+                truncation=False,
+            )
+            for chunk in chunked_token_ids
+        ]
+
+        return self.tokenizer.pad(encoded_chunks, padding=True, return_tensors="pt")
