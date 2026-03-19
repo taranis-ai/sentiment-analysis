@@ -1,6 +1,7 @@
+import asyncio
 from collections import Counter
 
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 class Roberta:
@@ -12,9 +13,9 @@ class Roberta:
 
         self.label_mapping = {"LABEL_0": "Negative", "LABEL_1": "Neutral", "LABEL_2": "Positive"}
 
-    def predict(self, text: str) -> dict:
+    async def predict(self, text: str) -> dict:
         model_inputs = self._build_model_inputs(text)
-        outputs = self.roberta_sentiment_pipeline(**model_inputs)
+        outputs = await asyncio.to_thread(self.roberta_sentiment_pipeline, **model_inputs)
         logits = outputs.logits
 
         predicted_class_ids = logits.argmax(dim=1).tolist()
