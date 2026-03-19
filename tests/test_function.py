@@ -35,8 +35,8 @@ async def test_correct_sentiment_roberta(roberta, request, text_fixture, expecte
     )
 
 @pytest.mark.asyncio
-def test_long_text_roberta_succeeds(long_text, roberta):
-    result = roberta.predict(long_text)
+async def test_long_text_roberta_succeeds(long_text, roberta):
+    result = await roberta.predict(long_text)
     assert_schema(result)
     assert result["label"].lower() in {"positive", "negative", "neutral"}
 
